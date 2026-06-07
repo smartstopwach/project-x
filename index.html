@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Times Square</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#000;
+    min-height:100vh;
+    font-family:'Arial Black', Arial, sans-serif;
+    user-select:none;
+    overflow-x:hidden;
+  }
+
+  /* ── TILES GRID ── */
+  #grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap:6px;
+    padding:6px;
+    min-height:100vh;
+  }
+
+  .tile {
+    aspect-ratio:1/1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:clamp(22px,4vw,40px);
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:2px;
+    cursor:pointer;
+    border-radius:6px;
+    transition:transform 0.1s, filter 0.1s;
+    position:relative;
+    overflow:hidden;
+    animation:tileFlicker linear infinite;
+  }
+  .tile:hover { transform:scale(1.07); filter:brightness(1.3); }
+  .tile:active { transform:scale(0.95); }
+
+  .tile::before {
+    content:'';
+    position:absolute; inset:0;
+    background:inherit;
+    filter:blur(0);
+    z-index:0;
+  }
+  .tile span { position:relative; z-index:1; text-shadow:0 0 12px currentColor; }
+
+  @keyframes tileFlicker {
+    0%,100%{opacity:1} 94%{opacity:1} 95%{opacity:0.4} 96%{opacity:1} 99%{opacity:0.6} 100%{opacity:1}
+  }
+
+  /* color themes for tiles */
+  .t0{background:#1a0000;color:#ff2200;}
+  .t1{background:#1a1100;color:#ffcc00;}
+  .t2{background:#001a00;color:#00ff44;}
+  .t3{background:#00101a;color:#00ccff;}
+  .t4{background:#10001a;color:#cc00ff;}
+  .t5{background:#1a000d;color:#ff0088;}
+  .t6{background:#001010;color:#00ffcc;}
+  .t7{background:#0d0d00;color:#ffff00;}
+  .t8{background:#1a0800;color:#ff6600;}
+  .t9{background:#000d1a;color:#0088ff;}
+
+  /* ── PLAYING STATE: tile pulses ── */
+  .tile.playing {
+    animation:playPulse 0.4s ease-in-out infinite, tileFlicker linear infinite;
+    outline:3px solid #fff;
+  }
+  @keyframes playPulse {
+    0%,100%{transform:scale(1)} 50%{transform:scale(1.12)}
+  }
+
+  /* ── FAKE POPUP ── */
+  #popup-overlay {
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.85);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+  }
+  #popup-overlay.show { display:flex; }
+
+  #popup {
+    background:#111;
+    border:2px solid #ff0;
+    border-radius:12px;
+    padding:36px 40px;
+    max-width:380px;
+    width:90%;
+    text-align:center;
+    animation:popupIn 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popupIn {
+    from{transform:scale(0.5);opacity:0}
+    to{transform:scale(1);opacity:1}
+  }
+  #popup h2 {
+    color:#ffff00;
+    font-size:26px;
+    margin-bottom:12px;
+    text-shadow:0 0 20px #ff0;
+  }
+  #popup p {
+    color:#ccc;
+    font-size:16px;
+    margin-bottom:28px;
+    line-height:1.5;
+  }
+  .popup-btns {
+    display:flex;
+    gap:16px;
+    justify-content:center;
+  }
+  .popup-btns button {
+    padding:14px 40px;
+    font-size:18px;
+    font-weight:900;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    letter-spacing:2px;
+    transition:transform 0.1s;
+  }
+  .popup-btns button:active { transform:scale(0.95); }
+  #btn-yes { background:#ff2200; color:#fff; }
+  #btn-no  { background:#444;    color:#fff; }
+
+  /* ── TOAST MESSAGE ── */
+  #toast {
+    position:fixed;
+    bottom:30px; left:50%;
+    transform:translateX(-50%) translateY(80px);
+    background:#ff0;
+    color:#000;
+    font-weight:900;
+    font-size:16px;
+    padding:12px 28px;
+    border-radius:30px;
+    z-index:99999;
+    transition:transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    white-space:nowrap;
+    letter-spacing:1px;
+  }
+  #toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div id="grid"></div>
+
+<!-- Fake exit popup -->
+<div id="popup-overlay">
+  <div id="popup">
+    <h2>😈 Ruko Bhai!</h2>
+    <p>Kya sach mein jaana chahte ho?<br>Itni jaldi kyun hai?</p>
+    <div class="popup-btns">
+      <button id="btn-yes" onclick="fakeYes()">YES</button>
+      <button id="btn-no"  onclick="closePopup()">NO</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" id="toast"></div>
+
+<script>
+  const WORDS = ['FIRE','BOOM','HOT','WOW','LIVE','FREE','NOW','BIG','YES','OMG','WILD','LOUD','NEON','RUSH','REAL','FLEX','GLOW','HEAT','RAVE','JUMP','SPIN','BANG','EPIC','VIBE','RIOT'];
+  const CLASSES = ['t0','t1','t2','t3','t4','t5','t6','t7','t8','t9'];
+  const FLICKER_SPEEDS = ['3s','4.5s','2.5s','6s','3.5s','5s','2s','4s','7s','2.8s'];
+
+  const grid = document.getElementById('grid');
+  const popupOverlay = document.getElementById('popup-overlay');
+  const toast = document.getElementById('toast');
+
+  let audio = null;
+  let activeTile = null;
+
+  // Build tiles
+  const TILE_COUNT = 60;
+  for (let i = 0; i < TILE_COUNT; i++) {
+    const tile = document.createElement('div');
+    tile.className = 'tile ' + CLASSES[i % CLASSES.length];
+    tile.style.animationDuration = FLICKER_SPEEDS[i % FLICKER_SPEEDS.length];
+    tile.style.animationDelay = (Math.random() * 3).toFixed(1) + 's';
+    tile.innerHTML = `<span>${WORDS[i % WORDS.length]}</span>`;
+    tile.addEventListener('click', () => playMusic(tile));
+    tile.addEventListener('touchstart', (e) => { e.preventDefault(); playMusic(tile); }, { passive:false });
+    grid.appendChild(tile);
+  }
+
+  function playMusic(tile) {
+    // Remove playing class from previous
+    if (activeTile) activeTile.classList.remove('playing');
+    activeTile = tile;
+    tile.classList.add('playing');
+
+    // Stop previous audio
+    if (audio) { audio.pause(); audio.currentTime = 0; }
+
+    audio = new Audio('music.mp3');
+    audio.loop = true;
+    audio.volume = 1.0;
+    audio.play().catch(e => console.log(e));
+  }
+
+  // Fake popup on back/exit
+  window.addEventListener('beforeunload', (e) => {
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
+  // Intercept back gesture with popstate
+  history.pushState(null, '', location.href);
+  window.addEventListener('popstate', () => {
+    history.pushState(null, '', location.href);
+    showPopup();
+  });
+
+  function showPopup() {
+    popupOverlay.classList.add('show');
+  }
+
+  function closePopup() {
+    // "NO" button — just close popup, stay on page
+    popupOverlay.classList.remove('show');
+    showToast('Sahi kiya! 😄 Mat ja!');
+  }
+
+  function fakeYes() {
+    // "YES" button — also secretly = NO, just show message
+    popupOverlay.classList.remove('show');
+    showToast('Nahi jaane denge tujhe 😈😂');
+    // Push state again so back still triggers popup
+    history.pushState(null, '', location.href);
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // Disable right click
+  document.addEventListener('contextmenu', e => e.preventDefault());
+</script>
+</body>
+</html>
