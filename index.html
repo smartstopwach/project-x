@@ -14,7 +14,6 @@
     overflow-x:hidden;
   }
 
-  /* ── TILES GRID ── */
   #grid {
     display:grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -39,23 +38,13 @@
     overflow:hidden;
     animation:tileFlicker linear infinite;
   }
-  .tile:hover { transform:scale(1.07); filter:brightness(1.3); }
+  .tile:hover { transform:scale(1.07); filter:brightness(1.4); }
   .tile:active { transform:scale(0.95); }
-
-  .tile::before {
-    content:'';
-    position:absolute; inset:0;
-    background:inherit;
-    filter:blur(0);
-    z-index:0;
-  }
   .tile span { position:relative; z-index:1; text-shadow:0 0 12px currentColor; }
 
   @keyframes tileFlicker {
-    0%,100%{opacity:1} 94%{opacity:1} 95%{opacity:0.4} 96%{opacity:1} 99%{opacity:0.6} 100%{opacity:1}
+    0%,100%{opacity:1} 94%{opacity:1} 95%{opacity:0.3} 96%{opacity:1} 99%{opacity:0.5} 100%{opacity:1}
   }
-
-  /* color themes for tiles */
   .t0{background:#1a0000;color:#ff2200;}
   .t1{background:#1a1100;color:#ffcc00;}
   .t2{background:#001a00;color:#00ff44;}
@@ -67,60 +56,46 @@
   .t8{background:#1a0800;color:#ff6600;}
   .t9{background:#000d1a;color:#0088ff;}
 
-  /* ── PLAYING STATE: tile pulses ── */
   .tile.playing {
-    animation:playPulse 0.4s ease-in-out infinite, tileFlicker linear infinite;
+    animation:playPulse 0.4s ease-in-out infinite;
     outline:3px solid #fff;
   }
   @keyframes playPulse {
-    0%,100%{transform:scale(1)} 50%{transform:scale(1.12)}
+    0%,100%{transform:scale(1)} 50%{transform:scale(1.1)}
   }
 
-  /* ── FAKE POPUP ── */
-  #popup-overlay {
+  /* ── POPUP BASE ── */
+  .overlay {
     display:none;
     position:fixed; inset:0;
-    background:rgba(0,0,0,0.85);
+    background:rgba(0,0,0,0.88);
     z-index:9999;
     align-items:center;
     justify-content:center;
   }
-  #popup-overlay.show { display:flex; }
+  .overlay.show { display:flex; }
 
-  #popup {
+  .popup {
     background:#111;
     border:2px solid #ff0;
-    border-radius:12px;
+    border-radius:14px;
     padding:36px 40px;
-    max-width:380px;
+    max-width:370px;
     width:90%;
     text-align:center;
-    animation:popupIn 0.3s cubic-bezier(.34,1.56,.64,1);
+    animation:popIn 0.3s cubic-bezier(.34,1.56,.64,1);
   }
-  @keyframes popupIn {
-    from{transform:scale(0.5);opacity:0}
+  @keyframes popIn {
+    from{transform:scale(0.4);opacity:0}
     to{transform:scale(1);opacity:1}
   }
-  #popup h2 {
-    color:#ffff00;
-    font-size:26px;
-    margin-bottom:12px;
-    text-shadow:0 0 20px #ff0;
-  }
-  #popup p {
-    color:#ccc;
-    font-size:16px;
-    margin-bottom:28px;
-    line-height:1.5;
-  }
-  .popup-btns {
-    display:flex;
-    gap:16px;
-    justify-content:center;
-  }
-  .popup-btns button {
-    padding:14px 40px;
-    font-size:18px;
+  .popup h2 { color:#ffff00; font-size:24px; margin-bottom:12px; text-shadow:0 0 16px #ff0; }
+  .popup p  { color:#ccc; font-size:15px; margin-bottom:26px; line-height:1.5; }
+
+  .btn-row { display:flex; gap:14px; justify-content:center; }
+  .btn-row button {
+    padding:13px 36px;
+    font-size:17px;
     font-weight:900;
     border:none;
     border-radius:8px;
@@ -128,25 +103,24 @@
     letter-spacing:2px;
     transition:transform 0.1s;
   }
-  .popup-btns button:active { transform:scale(0.95); }
-  #btn-yes { background:#ff2200; color:#fff; }
-  #btn-no  { background:#444;    color:#fff; }
+  .btn-row button:active { transform:scale(0.94); }
+  .btn-yes { background:#ff2200; color:#fff; }
+  .btn-no  { background:#333; color:#ccc; }
 
-  /* ── TOAST MESSAGE ── */
+  /* ── TOAST ── */
   #toast {
     position:fixed;
-    bottom:30px; left:50%;
-    transform:translateX(-50%) translateY(80px);
-    background:#ff0;
+    bottom:28px; left:50%;
+    transform:translateX(-50%) translateY(90px);
+    background:#ffff00;
     color:#000;
     font-weight:900;
-    font-size:16px;
-    padding:12px 28px;
+    font-size:15px;
+    padding:12px 26px;
     border-radius:30px;
     z-index:99999;
     transition:transform 0.4s cubic-bezier(.34,1.56,.64,1);
     white-space:nowrap;
-    letter-spacing:1px;
   }
   #toast.show { transform:translateX(-50%) translateY(0); }
 </style>
@@ -155,99 +129,120 @@
 
 <div id="grid"></div>
 
-<!-- Fake exit popup -->
-<div id="popup-overlay">
-  <div id="popup">
-    <h2>😈 Ruko Bhai!</h2>
-    <p>Kya sach mein jaana chahte ho?<br>Itni jaldi kyun hai?</p>
-    <div class="popup-btns">
-      <button id="btn-yes" onclick="fakeYes()">YES</button>
-      <button id="btn-no"  onclick="closePopup()">NO</button>
+<!-- POPUP 1: "Do you want to close?" -->
+<div class="overlay" id="popup1">
+  <div class="popup">
+    <h2>🚪 Jaana chahte ho?</h2>
+    <p>Do you want to close this site?</p>
+    <div class="btn-row">
+      <button class="btn-yes" onclick="popup1Yes()">YES</button>
+      <button class="btn-no"  onclick="popup1No()">NO</button>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
-<div id="toast" id="toast"></div>
+<!-- POPUP 2: "Are you sure?" -->
+<div class="overlay" id="popup2">
+  <div class="popup">
+    <h2>🤔 Are you sure?</h2>
+    <p>Sach mein sure ho? Ek baar aur socho...</p>
+    <div class="btn-row">
+      <button class="btn-yes" onclick="popup2Yes()">YES</button>
+      <button class="btn-no"  onclick="popup2No()">NO</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
 
 <script>
   const WORDS = ['FIRE','BOOM','HOT','WOW','LIVE','FREE','NOW','BIG','YES','OMG','WILD','LOUD','NEON','RUSH','REAL','FLEX','GLOW','HEAT','RAVE','JUMP','SPIN','BANG','EPIC','VIBE','RIOT'];
   const CLASSES = ['t0','t1','t2','t3','t4','t5','t6','t7','t8','t9'];
-  const FLICKER_SPEEDS = ['3s','4.5s','2.5s','6s','3.5s','5s','2s','4s','7s','2.8s'];
+  const SPEEDS  = ['3s','4.5s','2.5s','6s','3.5s','5s','2s','4s','7s','2.8s'];
 
   const grid = document.getElementById('grid');
-  const popupOverlay = document.getElementById('popup-overlay');
+  const p1 = document.getElementById('popup1');
+  const p2 = document.getElementById('popup2');
   const toast = document.getElementById('toast');
 
   let audio = null;
   let activeTile = null;
 
-  // Build tiles
-  const TILE_COUNT = 60;
-  for (let i = 0; i < TILE_COUNT; i++) {
+  // Build 60 tiles
+  for (let i = 0; i < 60; i++) {
     const tile = document.createElement('div');
     tile.className = 'tile ' + CLASSES[i % CLASSES.length];
-    tile.style.animationDuration = FLICKER_SPEEDS[i % FLICKER_SPEEDS.length];
+    tile.style.animationDuration = SPEEDS[i % SPEEDS.length];
     tile.style.animationDelay = (Math.random() * 3).toFixed(1) + 's';
     tile.innerHTML = `<span>${WORDS[i % WORDS.length]}</span>`;
-    tile.addEventListener('click', () => playMusic(tile));
-    tile.addEventListener('touchstart', (e) => { e.preventDefault(); playMusic(tile); }, { passive:false });
+    tile.addEventListener('click', () => onTileClick(tile));
+    tile.addEventListener('touchstart', (e) => { e.preventDefault(); onTileClick(tile); }, { passive: false });
     grid.appendChild(tile);
   }
 
-  function playMusic(tile) {
-    // Remove playing class from previous
+  function onTileClick(tile) {
+    // Play music
     if (activeTile) activeTile.classList.remove('playing');
     activeTile = tile;
     tile.classList.add('playing');
 
-    // Stop previous audio
     if (audio) { audio.pause(); audio.currentTime = 0; }
-
     audio = new Audio('music.mp3');
     audio.loop = true;
     audio.volume = 1.0;
-    audio.play().catch(e => console.log(e));
+    audio.play().catch(e => {});
+
+    // Show popup 1 on every tile click
+    showPopup1();
   }
 
-  // Fake popup on back/exit
+  // ── POPUP 1 ──
+  function showPopup1() {
+    p1.classList.add('show');
+  }
+  function popup1Yes() {
+    // YES = secretly NO → go to popup 2
+    p1.classList.remove('show');
+    setTimeout(() => p2.classList.add('show'), 200);
+  }
+  function popup1No() {
+    // NO = stay
+    p1.classList.remove('show');
+    showToast('Sahi kiya! Reh yahan 😄');
+  }
+
+  // ── POPUP 2 ──
+  function popup2Yes() {
+    // YES = also secretly NO → back to site with toast
+    p2.classList.remove('show');
+    showToast('Nahi jaane denge 😈😂 Enjoy kar!');
+    history.pushState(null, '', location.href);
+  }
+  function popup2No() {
+    // NO = obviously NO
+    p2.classList.remove('show');
+    showToast('Achha hua nahi gaya! 🔥');
+  }
+
+  // ── BACK BUTTON trap ──
+  history.pushState(null, '', location.href);
+  window.addEventListener('popstate', () => {
+    history.pushState(null, '', location.href);
+    showPopup1();
+  });
+
   window.addEventListener('beforeunload', (e) => {
     e.preventDefault();
     e.returnValue = '';
   });
 
-  // Intercept back gesture with popstate
-  history.pushState(null, '', location.href);
-  window.addEventListener('popstate', () => {
-    history.pushState(null, '', location.href);
-    showPopup();
-  });
-
-  function showPopup() {
-    popupOverlay.classList.add('show');
-  }
-
-  function closePopup() {
-    // "NO" button — just close popup, stay on page
-    popupOverlay.classList.remove('show');
-    showToast('Sahi kiya! 😄 Mat ja!');
-  }
-
-  function fakeYes() {
-    // "YES" button — also secretly = NO, just show message
-    popupOverlay.classList.remove('show');
-    showToast('Nahi jaane denge tujhe 😈😂');
-    // Push state again so back still triggers popup
-    history.pushState(null, '', location.href);
-  }
-
+  // ── TOAST ──
   function showToast(msg) {
     toast.textContent = msg;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2500);
+    setTimeout(() => toast.classList.remove('show'), 2600);
   }
 
-  // Disable right click
   document.addEventListener('contextmenu', e => e.preventDefault());
 </script>
 </body>
