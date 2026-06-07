@@ -204,7 +204,24 @@
   const toast = document.getElementById('toast');
   const roach = document.getElementById('roach');
 
-  let audio = null;
+  // ✅ FIX: Audio ek baar banao page load pe, preload karo
+  const audio = new Audio('music.mp3');
+  audio.preload = 'auto';
+  audio.loop    = true;
+  audio.volume  = 1.0;
+  audio.load(); // Turant load shuru
+
+  // ✅ FIX: Pehli mousemove/touch pe bhi audio unlock (mobile ke liye)
+  let audioUnlocked = false;
+  function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    // Silently resume AudioContext if browser suspended it
+    audio.play().then(() => { audio.pause(); audio.currentTime = 0; }).catch(() => {});
+  }
+  document.addEventListener('mousemove', unlockAudio, { once: true });
+  document.addEventListener('touchstart', unlockAudio, { once: true });
+
   let activeTile = null;
   let cx = window.innerWidth/2, cy = window.innerHeight/2;
   let tx = cx, ty = cy;
@@ -252,11 +269,9 @@
     activeTile = tile;
     tile.classList.add('playing');
 
-    if (audio) { audio.pause(); audio.currentTime = 0; }
-    audio = new Audio('music.mp3');
-    audio.loop = true;
-    audio.volume = 1.0;
-    audio.play().catch(()=>{});
+    // ✅ FIX: Naya object nahi, wohi wala audio reuse karo
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
 
     showPopup1();
   }
