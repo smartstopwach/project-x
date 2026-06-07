@@ -65,7 +65,6 @@
     0%,100%{transform:scale(1)} 50%{transform:scale(1.1)}
   }
 
-  /* ── COCKROACH CURSOR ── */
   #roach {
     position:fixed;
     pointer-events:none;
@@ -73,24 +72,9 @@
     width:120px;
     height:120px;
     transform:translate(-50%, -50%) rotate(0deg);
-    transition:transform 0.05s linear;
     will-change:transform, left, top;
   }
 
-  /* ── REAL CURSOR (tiny dot) ── */
-  #real-cursor {
-    position:fixed;
-    pointer-events:none;
-    z-index:1000000;
-    width:6px;
-    height:6px;
-    background:#fff;
-    border-radius:50%;
-    transform:translate(-50%,-50%);
-    will-change:left,top;
-  }
-
-  /* ── POPUPS ── */
   .overlay {
     display:none;
     position:fixed; inset:0;
@@ -154,51 +138,37 @@
 
 <div id="grid"></div>
 
-<!-- Cockroach SVG cursor -->
 <svg id="roach" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <!-- Body -->
   <ellipse cx="50" cy="55" rx="14" ry="22" fill="#2a1a00" stroke="#1a0d00" stroke-width="1"/>
-  <!-- Head -->
   <ellipse cx="50" cy="32" rx="10" ry="9" fill="#3a2200" stroke="#1a0d00" stroke-width="1"/>
-  <!-- Eyes -->
   <circle cx="46" cy="29" r="2.5" fill="#ff3300"/>
   <circle cx="54" cy="29" r="2.5" fill="#ff3300"/>
   <circle cx="46.8" cy="28.5" r="1" fill="#fff"/>
   <circle cx="54.8" cy="28.5" r="1" fill="#fff"/>
-  <!-- Antennae -->
   <line x1="46" y1="25" x2="28" y2="10" stroke="#3a2200" stroke-width="1.5" stroke-linecap="round"/>
   <line x1="54" y1="25" x2="72" y2="10" stroke="#3a2200" stroke-width="1.5" stroke-linecap="round"/>
   <line x1="28" y1="10" x2="22" y2="5" stroke="#3a2200" stroke-width="1" stroke-linecap="round"/>
   <line x1="72" y1="10" x2="78" y2="5" stroke="#3a2200" stroke-width="1" stroke-linecap="round"/>
-  <!-- Wings -->
   <ellipse cx="44" cy="52" rx="11" ry="19" fill="#3d2600" stroke="#1a0d00" stroke-width="0.8" transform="rotate(-6,44,52)"/>
   <ellipse cx="56" cy="52" rx="11" ry="19" fill="#3d2600" stroke="#1a0d00" stroke-width="0.8" transform="rotate(6,56,52)"/>
-  <!-- Wing line detail -->
   <line x1="44" y1="36" x2="44" y2="70" stroke="#1a0d00" stroke-width="0.5" opacity="0.5"/>
   <line x1="56" y1="36" x2="56" y2="70" stroke="#1a0d00" stroke-width="0.5" opacity="0.5"/>
-  <!-- Legs left -->
   <line x1="38" y1="42" x2="18" y2="34" stroke="#2a1a00" stroke-width="1.8" stroke-linecap="round"/>
   <line x1="18" y1="34" x2="10" y2="40" stroke="#2a1a00" stroke-width="1.4" stroke-linecap="round"/>
   <line x1="37" y1="53" x2="15" y2="50" stroke="#2a1a00" stroke-width="1.8" stroke-linecap="round"/>
   <line x1="15" y1="50" x2="8" y2="58" stroke="#2a1a00" stroke-width="1.4" stroke-linecap="round"/>
   <line x1="38" y1="63" x2="18" y2="66" stroke="#2a1a00" stroke-width="1.8" stroke-linecap="round"/>
   <line x1="18" y1="66" x2="12" y2="75" stroke="#2a1a00" stroke-width="1.4" stroke-linecap="round"/>
-  <!-- Legs right -->
   <line x1="62" y1="42" x2="82" y2="34" stroke="#2a1a00" stroke-width="1.8" stroke-linecap="round"/>
   <line x1="82" y1="34" x2="90" y2="40" stroke="#2a1a00" stroke-width="1.4" stroke-linecap="round"/>
   <line x1="63" y1="53" x2="85" y2="50" stroke="#2a1a00" stroke-width="1.8" stroke-linecap="round"/>
   <line x1="85" y1="50" x2="92" y2="58" stroke="#2a1a00" stroke-width="1.4" stroke-linecap="round"/>
   <line x1="62" y1="63" x2="82" y2="66" stroke="#2a1a00" stroke-width="1.8" stroke-linecap="round"/>
   <line x1="82" y1="66" x2="88" y2="75" stroke="#2a1a00" stroke-width="1.4" stroke-linecap="round"/>
-  <!-- Tail -->
   <line x1="46" y1="76" x2="44" y2="86" stroke="#2a1a00" stroke-width="1.2" stroke-linecap="round"/>
   <line x1="54" y1="76" x2="56" y2="86" stroke="#2a1a00" stroke-width="1.2" stroke-linecap="round"/>
 </svg>
 
-<!-- Real tiny cursor dot -->
-<div id="real-cursor"></div>
-
-<!-- POPUP 1 -->
 <div class="overlay" id="popup1">
   <div class="popup">
     <h2>🚪 Close karna hai?</h2>
@@ -210,7 +180,6 @@
   </div>
 </div>
 
-<!-- POPUP 2 -->
 <div class="overlay" id="popup2">
   <div class="popup">
     <h2>🤔 Are you sure?</h2>
@@ -234,18 +203,14 @@
   const p2    = document.getElementById('popup2');
   const toast = document.getElementById('toast');
   const roach = document.getElementById('roach');
-  const dot   = document.getElementById('real-cursor');
 
   let audio = null;
   let activeTile = null;
-
-  // current & target positions for smooth roach
   let cx = window.innerWidth/2, cy = window.innerHeight/2;
   let tx = cx, ty = cy;
   let prevX = cx, prevY = cy;
   let angle = 0;
 
-  // Build tiles
   for (let i = 0; i < 60; i++) {
     const tile = document.createElement('div');
     tile.className = 'tile ' + CLASSES[i % CLASSES.length];
@@ -257,25 +222,16 @@
     grid.appendChild(tile);
   }
 
-  // Cockroach follow mouse with lag + rotation
   document.addEventListener('mousemove', (e) => {
     tx = e.clientX;
     ty = e.clientY;
-    dot.style.left = tx + 'px';
-    dot.style.top  = ty + 'px';
   });
 
-  // Leg wiggle animation using leg pairs
-  let legPhase = 0;
-  const legL = roach.querySelectorAll('line');
-
   function animateRoach() {
-    // Lerp roach toward target — FAST speed (0.28 = snappy but with slight lag)
     const speed = 0.28;
     cx += (tx - cx) * speed;
     cy += (ty - cy) * speed;
 
-    // Rotation based on movement direction
     const dx = cx - prevX;
     const dy = cy - prevY;
     if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
@@ -283,23 +239,14 @@
     }
     prevX = cx; prevY = cy;
 
-    // Leg wiggle offset
-    legPhase += 0.25;
-    const wiggle = Math.sin(legPhase) * 3;
-
     roach.style.left = cx + 'px';
     roach.style.top  = cy + 'px';
     roach.style.transform = `translate(-50%,-50%) rotate(${angle}deg)`;
-
-    // Antennae wiggle via slight scale on SVG
-    const antennaeWiggle = 1 + Math.sin(legPhase * 1.5) * 0.03;
-    roach.style.transform = `translate(-50%,-50%) rotate(${angle}deg) scaleX(${antennaeWiggle})`;
 
     requestAnimationFrame(animateRoach);
   }
   animateRoach();
 
-  // Tile click
   function onTileClick(tile) {
     if (activeTile) activeTile.classList.remove('playing');
     activeTile = tile;
@@ -314,7 +261,6 @@
     showPopup1();
   }
 
-  // Popup 1
   function showPopup1() { p1.classList.add('show'); }
   function popup1Yes() {
     p1.classList.remove('show');
@@ -325,7 +271,6 @@
     showToast('Sahi kiya! Reh yahan 😄');
   }
 
-  // Popup 2
   function popup2Yes() {
     p2.classList.remove('show');
     showToast('Nahi jaane denge 😈😂 Enjoy kar!');
@@ -336,7 +281,6 @@
     showToast('Achha hua nahi gaya! 🔥');
   }
 
-  // Back button trap
   history.pushState(null,'',location.href);
   window.addEventListener('popstate', () => {
     history.pushState(null,'',location.href);
