@@ -3,255 +3,440 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Times Square</title>
+<title>Mystery Garden</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin:0; padding:0; box-sizing:border-box; }
   body {
-    background: #000;
-    width: 100vw; height: 100vh;
-    overflow: hidden;
-    font-family: 'Arial Black', Arial, sans-serif;
-    cursor: crosshair;
-    user-select: none;
+    background: #0a0a0a;
+    min-height:100vh;
+    font-family:'Arial Black', Arial, sans-serif;
+    user-select:none;
+    overflow-x:hidden;
+    cursor:none;
   }
-  #bg {
-    position: fixed; inset: 0;
-    background: #000;
-    z-index: 0;
+
+  /* Header */
+  #header {
+    text-align:center;
+    padding: 28px 20px 10px;
+    position:relative;
+    z-index:10;
   }
-  .billboard {
-    position: absolute;
-    font-weight: 900;
-    text-transform: uppercase;
-    animation: flicker linear infinite;
-    pointer-events: none;
-  }
-  @keyframes flicker {
-    0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.1}
-    94%{opacity:1} 96%{opacity:0.3} 97%{opacity:1}
-  }
-  @keyframes shake {
-    0%{transform:translate(-2px,-1px) rotate(-0.5deg)}
-    25%{transform:translate(2px,1px) rotate(0.5deg)}
-    50%{transform:translate(-1px,2px) rotate(-0.3deg)}
-    75%{transform:translate(1px,-1px) rotate(0.3deg)}
-    100%{transform:translate(-2px,-1px) rotate(-0.5deg)}
-  }
-  @keyframes pulse {
-    0%,100%{transform:scale(1)} 50%{transform:scale(1.08)}
-  }
-  @keyframes blink {
-    0%,100%{opacity:1} 50%{opacity:0}
-  }
-  #zoom-layer {
-    position: fixed; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 10;
-    pointer-events: none;
-    transform-origin: center center;
-  }
-  #center-text { text-align: center; }
-  #color-flash {
-    position: fixed; inset: 0;
-    z-index: 5;
-    pointer-events: none;
-    opacity: 0;
-    mix-blend-mode: screen;
-  }
-  #warning-overlay {
-    position: fixed; inset: 0;
-    background: #000;
-    z-index: 9999;
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column;
-    gap: 24px;
-    padding: 20px;
-  }
-  #warning-overlay h1 {
-    color: #ffff00;
-    font-size: clamp(32px, 8vw, 64px);
-    font-weight: 900;
-    text-align: center;
-    text-shadow: 0 0 30px #ffff00, 0 0 60px #ff8800;
-    animation: shake 0.15s infinite;
-  }
-  #warning-overlay p {
-    color: #ffffff;
-    font-size: clamp(16px, 3vw, 22px);
-    text-align: center;
-    max-width: 500px;
-    line-height: 1.5;
-    text-shadow: 0 0 10px #fff;
-  }
-  #enter-btn {
-    margin-top: 10px;
-    padding: 18px 60px;
-    background: #ffff00;
-    color: #000;
-    border: none;
-    font-size: clamp(18px, 4vw, 26px);
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 4px;
-    cursor: pointer;
-    animation: pulse 0.6s ease-in-out infinite;
-    border-radius: 4px;
-  }
-  #enter-btn:hover { background: #ff8800; }
-  #tap-hint {
-    position: fixed;
-    bottom: 40px; left: 50%;
-    transform: translateX(-50%);
+  #header h1 {
+    font-size: clamp(22px, 5vw, 42px);
     color: #fff;
-    font-size: clamp(16px, 4vw, 24px);
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px #ff69b4, 0 0 40px #ff1493;
+    animation: titlePulse 2s ease-in-out infinite;
+  }
+  #header p {
+    color: #ffb3d9;
+    font-size: clamp(13px, 2.5vw, 18px);
+    margin-top: 8px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    animation: blink 1.2s step-end infinite;
+  }
+  @keyframes titlePulse {
+    0%,100%{text-shadow:0 0 20px #ff69b4,0 0 40px #ff1493}
+    50%{text-shadow:0 0 40px #ff69b4,0 0 80px #ff1493,0 0 120px #ff69b4}
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* Grid */
+  #grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap:8px;
+    padding:10px 8px 30px;
+  }
+
+  .tile {
+    aspect-ratio:1/1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    border-radius:14px;
+    cursor:none;
+    position:relative;
+    overflow:hidden;
+    transition:transform 0.15s, filter 0.15s;
+    border: 1.5px solid rgba(255,255,255,0.08);
+  }
+  .tile:hover {
+    transform:scale(1.08);
+    filter:brightness(1.3);
+    border-color: rgba(255,255,255,0.3);
+  }
+  .tile:active { transform:scale(0.93); }
+
+  /* Flower emoji */
+  .tile .flower {
+    font-size: clamp(36px, 6vw, 54px);
+    line-height:1;
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.4));
+    transition: transform 0.3s;
+  }
+  .tile:hover .flower { transform: rotate(15deg) scale(1.15); }
+
+  /* Mystery label */
+  .tile .label {
+    font-size: clamp(9px, 1.5vw, 12px);
     font-weight: 900;
-    letter-spacing: 4px;
+    letter-spacing: 1.5px;
+    margin-top: 6px;
+    opacity: 0.85;
     text-transform: uppercase;
-    animation: blink 0.7s step-end infinite;
-    z-index: 100;
-    text-shadow: 0 0 20px #ffff00;
-    white-space: nowrap;
   }
-  #main-title {
-    font-size: clamp(50px, 12vw, 100px);
-    font-weight: 900;
-    color: #ffff00;
-    text-shadow: 0 0 40px #ffff00, 0 0 80px #ff8800;
-    animation: shake 0.15s infinite;
-    line-height: 1;
+
+  /* Flicker anim per tile */
+  @keyframes tileGlow {
+    0%,100%{opacity:1} 95%{opacity:1} 96%{opacity:0.5} 97%{opacity:1}
   }
-  #sub-title {
-    font-size: clamp(28px, 6vw, 50px);
-    font-weight: 900;
-    color: #ff00ff;
-    text-shadow: 0 0 20px #ff00ff;
-    margin-top: 10px;
-    animation: shake 0.1s infinite;
+
+  /* Playing state */
+  .tile.playing {
+    animation: playBounce 0.5s ease-in-out infinite !important;
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+  }
+  @keyframes playBounce {
+    0%,100%{transform:scale(1)} 50%{transform:scale(1.12)}
+  }
+
+  /* Revealed state */
+  .tile.revealed .flower {
+    animation: revealSpin 0.5s ease-out;
+  }
+  @keyframes revealSpin {
+    0%{transform:scale(0) rotate(-180deg)} 70%{transform:scale(1.3) rotate(10deg)} 100%{transform:scale(1) rotate(0deg)}
+  }
+
+  /* Cockroach */
+  #roach {
+    position:fixed;
+    pointer-events:none;
+    z-index:999999;
+    width:110px;
+    height:110px;
+    will-change:transform,left,top;
+  }
+
+  /* Popups */
+  .overlay {
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.88);
+    z-index:99999;
+    align-items:center;
+    justify-content:center;
+  }
+  .overlay.show { display:flex; }
+
+  .popup {
+    background:#111;
+    border:2px solid #ff69b4;
+    border-radius:16px;
+    padding:36px 40px;
+    max-width:370px;
+    width:90%;
+    text-align:center;
+    animation:popIn 0.35s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 0 40px rgba(255,105,180,0.3);
+  }
+  @keyframes popIn {
+    from{transform:scale(0.3) rotate(-5deg);opacity:0}
+    to{transform:scale(1) rotate(0deg);opacity:1}
+  }
+  .popup .pop-icon { font-size:48px; margin-bottom:10px; }
+  .popup h2 { color:#ff69b4; font-size:22px; margin-bottom:10px; text-shadow:0 0 12px #ff1493; }
+  .popup p  { color:#ddd; font-size:15px; margin-bottom:26px; line-height:1.6; }
+
+  .btn-row { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .btn-row button {
+    padding:13px 34px;
+    font-size:16px;
+    font-weight:900;
+    border:none;
+    border-radius:10px;
+    cursor:none;
+    letter-spacing:2px;
+    transition:transform 0.1s, filter 0.1s;
+  }
+  .btn-row button:hover { filter:brightness(1.2); }
+  .btn-row button:active { transform:scale(0.93); }
+  .btn-yes { background:linear-gradient(135deg,#ff1493,#ff69b4); color:#fff; }
+  .btn-no  { background:#2a2a2a; color:#aaa; border:1px solid #444; }
+
+  /* Toast */
+  #toast {
+    position:fixed;
+    bottom:28px; left:50%;
+    transform:translateX(-50%) translateY(90px);
+    background:linear-gradient(135deg,#ff1493,#ff69b4);
+    color:#fff;
+    font-weight:900;
+    font-size:15px;
+    padding:13px 28px;
+    border-radius:30px;
+    z-index:999999;
+    transition:transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    white-space:nowrap;
+    box-shadow:0 4px 20px rgba(255,20,147,0.5);
+  }
+  #toast.show { transform:translateX(-50%) translateY(0); }
+
+  /* Particle burst */
+  .particle {
+    position:fixed;
+    pointer-events:none;
+    z-index:99998;
+    font-size:20px;
+    animation:particleFly 1s ease-out forwards;
+  }
+  @keyframes particleFly {
+    0%{opacity:1;transform:translate(0,0) scale(1)}
+    100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}
   }
 </style>
 </head>
 <body>
 
-<!-- Step 1: Entry screen -->
-<div id="warning-overlay">
-  <h1>⚠ TIMES SQUARE ⚠</h1>
-  <p>Andar jaane ke baad wapas aana<br>mushkil ho sakta hai 😈<br><br>Apne risk pe enter karo!</p>
-  <button id="enter-btn" onclick="enterSite()">ANDAR JAO 😈</button>
+<div id="header">
+  <h1>🌸 Mystery Garden 🌸</h1>
+  <p>✨ Kisi bhi flower ko touch karo — secret reveal hoga! ✨</p>
 </div>
 
-<!-- Color flash overlay -->
-<div id="color-flash"></div>
+<div id="grid"></div>
 
-<!-- Billboard background -->
-<div id="bg"></div>
+<!-- Cockroach cursor -->
+<svg id="roach" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="50" cy="55" rx="14" ry="22" fill="#2a1a00" stroke="#1a0d00" stroke-width="1"/>
+  <ellipse cx="50" cy="32" rx="10" ry="9" fill="#3a2200" stroke="#1a0d00" stroke-width="1"/>
+  <circle cx="46" cy="29" r="2.5" fill="#ff3300"/>
+  <circle cx="54" cy="29" r="2.5" fill="#ff3300"/>
+  <circle cx="46.8" cy="28.5" r="1" fill="#fff"/>
+  <circle cx="54.8" cy="28.5" r="1" fill="#fff"/>
+  <line x1="46" y1="25" x2="28" y2="10" stroke="#3a2200" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="54" y1="25" x2="72" y2="10" stroke="#3a2200" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="28" y1="10" x2="22" y2="5" stroke="#3a2200" stroke-width="1" stroke-linecap="round"/>
+  <line x1="72" y1="10" x2="78" y2="5" stroke="#3a2200" stroke-width="1" stroke-linecap="round"/>
+  <ellipse cx="44" cy="52" rx="11" ry="19" fill="#3d2600" stroke="#1a0d00" stroke-width="0.8" transform="rotate(-6,44,52)"/>
+  <ellipse cx="56" cy="52" rx="11" ry="19" fill="#3d2600" stroke="#1a0d00" stroke-width="0.8" transform="rotate(6,56,52)"/>
+  <line x1="38" y1="42" x2="18" y2="34" stroke="#2a1a00" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="18" y1="34" x2="10" y2="40" stroke="#2a1a00" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="37" y1="53" x2="15" y2="50" stroke="#2a1a00" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="15" y1="50" x2="8" y2="58" stroke="#2a1a00" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="38" y1="63" x2="18" y2="66" stroke="#2a1a00" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="18" y1="66" x2="12" y2="75" stroke="#2a1a00" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="62" y1="42" x2="82" y2="34" stroke="#2a1a00" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="82" y1="34" x2="90" y2="40" stroke="#2a1a00" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="63" y1="53" x2="85" y2="50" stroke="#2a1a00" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="85" y1="50" x2="92" y2="58" stroke="#2a1a00" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="62" y1="63" x2="82" y2="66" stroke="#2a1a00" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="82" y1="66" x2="88" y2="75" stroke="#2a1a00" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="46" y1="76" x2="44" y2="86" stroke="#2a1a00" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="54" y1="76" x2="56" y2="86" stroke="#2a1a00" stroke-width="1.2" stroke-linecap="round"/>
+</svg>
 
-<!-- Zoom layer with center text -->
-<div id="zoom-layer">
-  <div id="center-text">
-    <div id="main-title">WELCOME</div>
-    <div id="sub-title">TO HELL 😈</div>
+<!-- Popup 1 -->
+<div class="overlay" id="popup1">
+  <div class="popup">
+    <div class="pop-icon">🚪</div>
+    <h2>Jaana chahte ho?</h2>
+    <p>Do you want to close this site?<br>Abhi toh secret reveal nahi hua! 😏</p>
+    <div class="btn-row">
+      <button class="btn-yes" onclick="popup1Yes()">YES</button>
+      <button class="btn-no"  onclick="popup1No()">NO</button>
+    </div>
   </div>
 </div>
 
-<!-- Tap hint (shown after entry, before tap) -->
-<div id="tap-hint" style="display:none;">TAP ANYWHERE TO START 🔥</div>
+<!-- Popup 2 -->
+<div class="overlay" id="popup2">
+  <div class="popup">
+    <div class="pop-icon">🤔</div>
+    <h2>Are you sure?</h2>
+    <p>Sach mein sure ho?<br>Ek aur flower bacha hai... 😈</p>
+    <div class="btn-row">
+      <button class="btn-yes" onclick="popup2Yes()">YES</button>
+      <button class="btn-no"  onclick="popup2No()">NO</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
 
 <script>
-  const colors = ['#ff0000','#ff6600','#ffff00','#00ff00','#00ffff','#ff00ff','#ffffff','#ff0080','#80ff00','#0080ff'];
-  const words = ['HOT','SALE','WOW','LIVE','FREE','NOW','BOOM','FLASH','BIG','DEAL','NEW','YES','FIRE','OMG','WILD','LOUD'];
+  const FLOWERS = [
+    { emoji:'🌸', label:'Cherry Blossom', bg:'#2d0a1a', color:'#ffb3d9' },
+    { emoji:'🌺', label:'Hibiscus',       bg:'#2d0800', color:'#ff6b6b' },
+    { emoji:'🌻', label:'Sunflower',      bg:'#1a1200', color:'#ffd700' },
+    { emoji:'🌹', label:'Rose',           bg:'#1a0000', color:'#ff4444' },
+    { emoji:'🌷', label:'Tulip',          bg:'#1a0010', color:'#ff80bf' },
+    { emoji:'💐', label:'Bouquet',        bg:'#0d1a00', color:'#80ff80' },
+    { emoji:'🌼', label:'Blossom',        bg:'#1a1500', color:'#ffee80' },
+    { emoji:'🪷', label:'Lotus',          bg:'#1a0015', color:'#ff99cc' },
+    { emoji:'🌿', label:'Mystery Leaf',   bg:'#001a00', color:'#66ff66' },
+    { emoji:'🍀', label:'Lucky Clover',   bg:'#001500', color:'#00cc44' },
+    { emoji:'🌾', label:'Wheat',          bg:'#1a1000', color:'#ccaa00' },
+    { emoji:'🍁', label:'Maple',          bg:'#1a0800', color:'#ff6600' },
+    { emoji:'🌱', label:'Sprout',         bg:'#001200', color:'#44ff88' },
+    { emoji:'🪻', label:'Violet',         bg:'#0d0020', color:'#cc88ff' },
+    { emoji:'🌙', label:'Moon Flower',    bg:'#000d1a', color:'#88ccff' },
+    { emoji:'⭐', label:'Star Bloom',     bg:'#0d0d00', color:'#ffff44' },
+    { emoji:'🔮', label:'Magic Flower',   bg:'#10001a', color:'#cc44ff' },
+    { emoji:'💫', label:'Spark',          bg:'#0a0a1a', color:'#aaaaff' },
+    { emoji:'🎋', label:'Bamboo',         bg:'#001a05', color:'#55ff77' },
+    { emoji:'🍄', label:'Mushroom',       bg:'#1a0500', color:'#ff8844' },
+  ];
 
-  function rnd(a,b){ return Math.floor(Math.random()*(b-a))+a; }
-  function rndColor(){ return colors[rnd(0,colors.length)]; }
+  const REVEAL_MSGS = [
+    '🌸 Wah! Kitna sundar!',
+    '💥 Yahi tha secret!',
+    '😱 Mil gaya!',
+    '🎉 Lucky tile!',
+    '🔥 Ye toh special hai!',
+    '✨ Magic unlock!',
+    '😈 Trap mein aa gaye!',
+    '🪄 Jadoo ho gaya!',
+  ];
 
-  const bg = document.getElementById('bg');
-  const flash = document.getElementById('color-flash');
-  const zoomLayer = document.getElementById('zoom-layer');
-  const tapHint = document.getElementById('tap-hint');
+  const grid  = document.getElementById('grid');
+  const p1    = document.getElementById('popup1');
+  const p2    = document.getElementById('popup2');
+  const toast = document.getElementById('toast');
+  const roach = document.getElementById('roach');
 
-  let billboardInterval = null;
-  let zoomScale = 1;
-  let zoomActive = false;
-  let started = false;
   let audio = null;
+  let activeTile = null;
+  let cx = window.innerWidth/2, cy = window.innerHeight/2;
+  let tx = cx, ty = cy;
+  let prevX = cx, prevY = cy;
+  let angle = 0;
 
-  // Make random billboard text
-  function makeBillboard() {
-    const el = document.createElement('div');
-    el.className = 'billboard';
-    el.textContent = words[rnd(0,words.length)];
-    const sz = rnd(18, 90);
-    const c1 = rndColor();
-    const c2 = rndColor();
-    el.style.cssText = `
-      left:${rnd(0,88)}%;
-      top:${rnd(0,88)}%;
-      font-size:${sz}px;
-      color:${c1};
-      text-shadow:0 0 12px ${c2}, 0 0 24px ${c1};
-      animation-duration:${(Math.random()*3+0.5).toFixed(1)}s;
-      transform:rotate(${rnd(-20,20)}deg);
+  // Build 60 tiles
+  for (let i = 0; i < 60; i++) {
+    const f = FLOWERS[i % FLOWERS.length];
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.style.background = f.bg;
+    tile.style.animationName = 'tileGlow';
+    tile.style.animationDuration = (2 + Math.random()*4).toFixed(1) + 's';
+    tile.style.animationTimingFunction = 'linear';
+    tile.style.animationIterationCount = 'infinite';
+    tile.style.animationDelay = (Math.random()*3).toFixed(1) + 's';
+    tile.innerHTML = `
+      <span class="flower">${f.emoji}</span>
+      <span class="label" style="color:${f.color}">${f.label}</span>
     `;
-    bg.appendChild(el);
-    setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, rnd(800,3500));
+    tile.addEventListener('click', () => onTileClick(tile, f));
+    tile.addEventListener('touchstart', (e)=>{ e.preventDefault(); onTileClick(tile, f); }, {passive:false});
+    grid.appendChild(tile);
   }
 
-  // Color flash effect
-  function startFlash() {
-    setInterval(()=>{
-      flash.style.background = rndColor();
-      flash.style.opacity = (Math.random()*0.25).toFixed(2);
-    }, 70);
+  // Roach movement
+  document.addEventListener('mousemove', (e) => { tx = e.clientX; ty = e.clientY; });
+
+  function animateRoach() {
+    cx += (tx - cx) * 0.28;
+    cy += (ty - cy) * 0.28;
+    const dx = cx - prevX, dy = cy - prevY;
+    if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+      angle = Math.atan2(dy, dx) * (180/Math.PI) + 90;
+    }
+    prevX = cx; prevY = cy;
+    roach.style.left = cx + 'px';
+    roach.style.top  = cy + 'px';
+    roach.style.transform = `translate(-50%,-50%) rotate(${angle}deg)`;
+    requestAnimationFrame(animateRoach);
   }
+  animateRoach();
 
-  // Zoom animation loop
-  function doZoom() {
-    if (!zoomActive) return;
-    zoomScale += 0.006;
-    if (zoomScale > 60) zoomScale = 1;
-    zoomLayer.style.transform = `scale(${zoomScale})`;
-    requestAnimationFrame(doZoom);
-  }
+  // Tile click
+  function onTileClick(tile, f) {
+    // Reveal animation
+    tile.classList.add('revealed');
+    if (activeTile && activeTile !== tile) activeTile.classList.remove('playing');
+    activeTile = tile;
+    tile.classList.add('playing');
 
-  // Called when user clicks Enter button
-  function enterSite() {
-    document.getElementById('warning-overlay').style.display = 'none';
-    tapHint.style.display = 'block';
-    // Start billboards
-    billboardInterval = setInterval(makeBillboard, 120);
-    startFlash();
-  }
+    // Particle burst
+    spawnParticles(tile, f.emoji);
 
-  // Called on first tap/click after entry
-  function startEverything() {
-    if (started) return;
-    started = true;
-    tapHint.style.display = 'none';
-
-    // Zoom
-    zoomActive = true;
-    doZoom();
-
-    // Shake body
-    document.body.style.animation = 'shake 0.08s infinite';
-
-    // Play music (upload music.mp3 to same folder as this file on GitHub)
+    // Music
+    if (audio) { audio.pause(); audio.currentTime = 0; }
     audio = new Audio('music.mp3');
     audio.loop = true;
     audio.volume = 1.0;
-    audio.play().catch(e => console.log('Audio error:', e));
+    audio.play().catch(()=>{});
+
+    // Random reveal toast
+    showToast(REVEAL_MSGS[Math.floor(Math.random()*REVEAL_MSGS.length)]);
+
+    // Popup after short delay
+    setTimeout(showPopup1, 900);
   }
 
-  document.addEventListener('click', startEverything);
-  document.addEventListener('touchstart', startEverything, { passive: true });
+  // Particle burst effect
+  function spawnParticles(tile, emoji) {
+    const rect = tile.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    const particles = ['✨','💫','⭐','🌟','💥','🎉'];
+    for (let i = 0; i < 8; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.textContent = particles[i % particles.length];
+      const angle = (i / 8) * 360;
+      const dist = 60 + Math.random()*60;
+      const dx = Math.cos(angle * Math.PI/180) * dist + 'px';
+      const dy = Math.sin(angle * Math.PI/180) * dist + 'px';
+      p.style.left = cx + 'px';
+      p.style.top  = cy + 'px';
+      p.style.setProperty('--dx', dx);
+      p.style.setProperty('--dy', dy);
+      p.style.animationDelay = (Math.random()*0.2).toFixed(2) + 's';
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(), 1200);
+    }
+  }
 
-  // Close tab warning
-  window.addEventListener('beforeunload', (e) => {
-    e.preventDefault();
-    e.returnValue = 'Sach mein jaana chahte ho bhai? 😂';
-    return 'Sach mein jaana chahte ho bhai? 😂';
+  // Popups
+  function showPopup1() { p1.classList.add('show'); }
+  function popup1Yes() {
+    p1.classList.remove('show');
+    setTimeout(() => p2.classList.add('show'), 200);
+  }
+  function popup1No() {
+    p1.classList.remove('show');
+    showToast('Sahi kiya! Aur flowers explore kar 🌸');
+  }
+  function popup2Yes() {
+    p2.classList.remove('show');
+    showToast('Nahi jaane denge 😈😂 Enjoy karo!');
+    history.pushState(null,'',location.href);
+  }
+  function popup2No() {
+    p2.classList.remove('show');
+    showToast('Achha hua! Aur secrets bache hain 🌺');
+  }
+
+  // Back button
+  history.pushState(null,'',location.href);
+  window.addEventListener('popstate', () => {
+    history.pushState(null,'',location.href);
+    showPopup1();
   });
+  window.addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue=''; });
 
-  // Disable right click
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
   document.addEventListener('contextmenu', e => e.preventDefault());
 </script>
 </body>
